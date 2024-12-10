@@ -1,3 +1,5 @@
+mod gui;
+
 use clap::Parser;
 use serde_json::Value;
 use std::{
@@ -17,6 +19,8 @@ struct Args {
     out: PathBuf,
     #[arg(short, long, default_value = "true")]
     client: bool,
+    #[arg(long, default_value = "false")]
+    cli: bool,
 }
 
 fn parse_targets(targets: serde_json::Value) -> Result<(), Box<dyn Error>> {
@@ -107,30 +111,42 @@ impl OnlineFile {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
-    println!("{:?}", args);
+    
+    // Parse the arguments
+    // or open the gui
+    let args = Args::parse(); 
+    let (pack_id, release_id, client, out) = match args.cli {
+        true => {
+            (args.pack_id, args.release, args.client, args.out)
+        },
+        false => {
+            panic!("Gui not yet implemented");
+        },
+    };
 
+    // Get the modpack index
     let res = reqwest::get(format!(
         "https://api.feed-the-beast.com/v1/modpacks/public/modpack/{}/{}/",
-        args.pack_id, args.release
+        pack_id, release_id
     ))
     .await?
     .text()
     .await?;
 
+    // Parse the index of the given modpack into a struct
     let json: Value = serde_json::from_str(&res)?;
-
     let files = OnlineFile::parse_files(json["files"].clone())?;
     for file in files.iter().filter(|file| {
-        if args.client {
+        if client {
             file.client
         } else {
             file.server
         }
     }) {
-        file.download(&args.out)?;
+        file.download(&out)?;
     }
 
+    // Parse the targets (minecraft version, forge version & java version)
     let targets = json["targets"].clone();
     parse_targets(targets)?;
 
