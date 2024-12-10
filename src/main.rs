@@ -1,5 +1,3 @@
-mod gui;
-
 use clap::Parser;
 use serde_json::Value;
 use std::{
