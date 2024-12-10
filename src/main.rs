@@ -1,6 +1,11 @@
-use clap::{Parser};
+use clap::Parser;
 use serde_json::Value;
-use std::{error::Error, process::Command, path::{Path, PathBuf}, str::FromStr };
+use std::{
+    error::Error,
+    path::{Path, PathBuf},
+    process::Command,
+    str::FromStr,
+};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -59,7 +64,8 @@ impl OnlineFile {
         let url = match json["mirrors"][0].as_str() {
             Some(url) => url,
             None => json["url"].as_str().unwrap(),
-        }.to_string();
+        }
+        .to_string();
 
         Ok(OnlineFile {
             path,
@@ -79,7 +85,7 @@ impl OnlineFile {
                 break;
             }
             i += 1;
-            println!("");
+            println!();
         }
         Ok(result)
     }
@@ -87,13 +93,13 @@ impl OnlineFile {
         println!("Downloading {:?}", self.path);
         let mut path: PathBuf = output_dir.to_path_buf();
         path.push(self.path.clone());
-        
+
         let _ = Command::new("curl")
             .arg(self.url.trim())
             .arg("--output")
             .arg(path)
-            .arg("--create-dirs").spawn()?;
-
+            .arg("--create-dirs")
+            .spawn()?;
 
         Ok(())
     }
@@ -104,7 +110,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     println!("{:?}", args);
 
-    let mut res = reqwest::get(format!(
+    let res = reqwest::get(format!(
         "https://api.feed-the-beast.com/v1/modpacks/public/modpack/{}/{}/",
         args.pack_id, args.release
     ))
@@ -114,11 +120,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let json: Value = serde_json::from_str(&res)?;
 
-    let targets = json["targets"].clone();
-
     let files = OnlineFile::parse_files(json["files"].clone())?;
-    println!("1: {:?}\n2: {:?}\n3: {:?}", files.get(0), files.get(1), files.get(2));
-
     for file in files.iter().filter(|file| {
         if args.client {
             file.client
@@ -129,6 +131,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         file.download(&args.out)?;
     }
 
+    let targets = json["targets"].clone();
     parse_targets(targets)?;
 
     Ok(())
