@@ -16,6 +16,7 @@
           buildInputs = with pkgs; [
             openssl
             wget
+            curl
           ];
 
           nativeBuildInputs = with pkgs; [ pkg-config ];
