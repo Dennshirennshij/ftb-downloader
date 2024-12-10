@@ -115,9 +115,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let json: Value = serde_json::from_str(&res)?;
 
     let targets = json["targets"].clone();
-    println!("{:?}", &targets);
 
-    parse_targets(targets)?;
     let files = OnlineFile::parse_files(json["files"].clone())?;
     println!("1: {:?}\n2: {:?}\n3: {:?}", files.get(0), files.get(1), files.get(2));
 
@@ -130,6 +128,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }) {
         file.download(&args.out)?;
     }
+
+    parse_targets(targets)?;
 
     Ok(())
 }
