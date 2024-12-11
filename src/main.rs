@@ -1,5 +1,8 @@
+mod gui;
+
 use clap::Parser;
 use core::panic;
+use gui::open_gui;
 use serde_json::Value;
 use std::{
     error::Error,
@@ -116,7 +119,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let (pack_id, release_id, client, out) = match args.cli {
         true => {
-            match (match (args.pack_id, args.release, args.client, args.out) {
+            match match (args.pack_id, args.release, args.client, args.out) {
                 (None, _, _, _) => Err("Pack ID"),
                 (_, None, _, _) => Err("Release ID"),
                 (_, _, None, _) => Err("Client"),
@@ -124,14 +127,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 (Some(pack), Some(release), Some(cl), Some(output)) => {
                     Ok((pack, release, cl, output))
                 }
-            }) {
+            } {
                 Ok(arguments) => arguments,
                 Err(var) => panic!("Variable not found: {}", var),
             }
         }
-        false => {
-            panic!("GUI not yet implemented");
-        }
+        false => open_gui(),
     };
 
     // Get the modpack index

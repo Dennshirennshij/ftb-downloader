@@ -17,6 +17,8 @@
             openssl
             wget
             curl
+            pango
+            gtk3
           ];
 
           nativeBuildInputs = with pkgs; [ pkg-config ];
