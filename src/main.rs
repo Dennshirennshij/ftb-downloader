@@ -1,5 +1,6 @@
 use clap::Parser;
 use serde_json::Value;
+use core::panic;
 use std::{
     error::Error,
     path::{Path, PathBuf},
@@ -10,13 +11,13 @@ use std::{
 #[derive(Parser, Debug)]
 struct Args {
     #[arg(short, long)]
-    pack_id: u32,
+    pack_id: Option<u32>,
     #[arg(short, long)]
-    release: u32,
+    release: Option<u32>,
     #[arg(short, long)]
-    out: PathBuf,
+    out: Option<PathBuf>,
     #[arg(short, long, default_value = "true")]
-    client: bool,
+    client: Option<bool>,
     #[arg(long, default_value = "false")]
     cli: bool,
 }
@@ -129,7 +130,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse(); 
     let (pack_id, release_id, client, out) = match args.cli {
         true => {
-            (args.pack_id, args.release, args.client, args.out)
+            match (match (args.pack_id, args.release, args.client, args.out) {
+                (None, _, _, _) => Err("Pack ID"),
+                (_, None, _, _) => Err("Release ID"),
+                (_, _, None, _) => Err("Client"),
+                (_, _, _, None) => Err("Output"),
+                (Some(pack), Some(release), Some(cl), Some(output)) => Ok((pack, release, cl, output)),
+            }) {
+                Ok(arguments) => arguments,
+                Err(var) => panic!("Variable not found: {}", var),
+            }
         },
         false => {
             panic!("GUI not yet implemented");
