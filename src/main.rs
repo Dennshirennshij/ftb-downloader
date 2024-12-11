@@ -21,7 +21,7 @@ struct Args {
     cli: bool,
 }
 
-fn parse_targets(targets: serde_json::Value) -> Result<(), Box<dyn Error>> {
+fn parse_targets(targets: serde_json::Value) {
     let mut i = 0;
     loop {
         let current_target = targets[i].clone();
@@ -42,7 +42,6 @@ fn parse_targets(targets: serde_json::Value) -> Result<(), Box<dyn Error>> {
 
         i += 1;
     }
-    Ok(())
 }
 
 #[derive(Debug, Hash, Eq, PartialEq, PartialOrd, Ord)]
@@ -76,7 +75,7 @@ impl OnlineFile {
             client: !server_only,
         })
     }
-    fn parse_files(json: serde_json::Value) -> Result<Vec<OnlineFile>, Box<dyn Error>> {
+    fn parse_files(json: serde_json::Value) -> Vec<OnlineFile> {
         let mut result: Vec<OnlineFile> = Vec::new();
         let mut i = 0;
         loop {
@@ -89,7 +88,7 @@ impl OnlineFile {
             i += 1;
             println!();
         }
-        Ok(result)
+        result
     }
     fn download(&self, output_dir: &Path) -> Result<(), Box<dyn Error>> {
         println!("Downloading {:?}", self.path);
@@ -107,6 +106,21 @@ impl OnlineFile {
     }
 }
 
+enum CustomError {
+    // Error given when the reqwest failed
+    REQWEST(),
+
+    // The reqwest-answers body is invalid
+    ANSWER_BODY(),
+
+    // The reqwest body couldn't be parsed to JSON
+    JSON_PARSING(),
+
+
+    JSON_STRUCTURE(),
+    CURL_SPAWNING(),
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     
@@ -118,7 +132,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             (args.pack_id, args.release, args.client, args.out)
         },
         false => {
-            panic!("Gui not yet implemented");
+            panic!("GUI not yet implemented");
         },
     };
 
@@ -133,7 +147,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Parse the index of the given modpack into a struct
     let json: Value = serde_json::from_str(&res)?;
-    let files = OnlineFile::parse_files(json["files"].clone())?;
+    let files = OnlineFile::parse_files(json["files"].clone());
     for file in files.iter().filter(|file| {
         if client {
             file.client
@@ -146,7 +160,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Parse the targets (minecraft version, forge version & java version)
     let targets = json["targets"].clone();
-    parse_targets(targets)?;
+    parse_targets(targets);
 
     Ok(())
 }
