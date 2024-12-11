@@ -1,8 +1,9 @@
 use clap::Parser;
-use serde_json::Value;
 use core::panic;
+use serde_json::Value;
 use std::{
     error::Error,
+    fmt::Debug,
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
@@ -108,27 +109,11 @@ impl OnlineFile {
     }
 }
 
-enum CustomError {
-    // Error given when the reqwest failed
-    REQWEST(),
-
-    // The reqwest-answers body is invalid
-    ANSWER_BODY(),
-
-    // The reqwest body couldn't be parsed to JSON
-    JSON_PARSING(),
-
-
-    JSON_STRUCTURE(),
-    CURL_SPAWNING(),
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    
     // Parse the arguments
     // or open the gui
-    let args = Args::parse(); 
+    let args = Args::parse();
     let (pack_id, release_id, client, out) = match args.cli {
         true => {
             match (match (args.pack_id, args.release, args.client, args.out) {
@@ -136,15 +121,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 (_, None, _, _) => Err("Release ID"),
                 (_, _, None, _) => Err("Client"),
                 (_, _, _, None) => Err("Output"),
-                (Some(pack), Some(release), Some(cl), Some(output)) => Ok((pack, release, cl, output)),
+                (Some(pack), Some(release), Some(cl), Some(output)) => {
+                    Ok((pack, release, cl, output))
+                }
             }) {
                 Ok(arguments) => arguments,
                 Err(var) => panic!("Variable not found: {}", var),
             }
-        },
+        }
         false => {
             panic!("GUI not yet implemented");
-        },
+        }
     };
 
     // Get the modpack index
@@ -159,13 +146,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Parse the index of the given modpack into a struct
     let json: Value = serde_json::from_str(&res)?;
     let files = OnlineFile::parse_files(json["files"].clone());
-    for file in files.iter().filter(|file| {
-        if client {
-            file.client
-        } else {
-            file.server
-        }
-    }) {
+    for file in files
+        .iter()
+        .filter(|file| if client { file.client } else { file.server })
+    {
         file.download(&out)?;
     }
 
