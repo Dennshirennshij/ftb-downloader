@@ -97,6 +97,7 @@ impl OnlineFile {
         path.push(self.path.clone());
 
         let _ = Command::new("curl")
+            .arg("--silent")
             .arg(self.url.trim())
             .arg("--output")
             .arg(path)
