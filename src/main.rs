@@ -114,9 +114,7 @@ impl OnlineFile {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // Open test UI
-    let result = gui::open_test_gui();
-
-    println!("{:?}", result);
+    let _ = gui::open_test_gui();
 
     // Parse the arguments
     // or open the gui
