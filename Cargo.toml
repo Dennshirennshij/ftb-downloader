@@ -5,7 +5,9 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.23", features = ["derive"] }
-druid = "0.8.3"
+eframe = { version = "0.30.0", features = ["wayland"] }
+egui = "0.30.0"
+egui_file = "0.19.0"
 reqwest = "0.12.9"
 serde_json = "1.0.133"
 tokio = { version = "1.42.0", features = ["full"] }

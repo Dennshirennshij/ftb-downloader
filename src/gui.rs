@@ -1,87 +1,52 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
+use eframe::egui::{CentralPanel, Context, TopBottomPanel, ViewportBuilder};
 
-use druid::{
-    widget::{Button, Checkbox, Flex, Label, TextBox},
-    AppLauncher, Data, Lens, Widget, WidgetExt, WindowDesc,
-};
-
-#[derive(Default, Clone, Data, Lens)]
-struct AppState {
-    pack_id: String,
-    release_id: String,
-    client: bool,
-    output: String,
+struct TestApp {
+    name: String,
+    age: u32,
+}
+impl Default for TestApp {
+    fn default() -> Self {
+        Self {
+            name: "Max Mustermann".to_string(),
+            age: 42,
+        }
+    }
 }
 
-fn build_ui() -> impl Widget<AppState> {
-    let pack_id_input = TextBox::new()
-        .with_placeholder("Enter the pack ID from FTB")
-        .lens(AppState::pack_id)
-        .fix_width(200.0)
-        .padding(10.0);
+impl eframe::App for TestApp {
+    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Give me your data now!");
 
-    let release_id_input = TextBox::new()
-        .with_placeholder("Enter the release ID from FTB")
-        .lens(AppState::release_id)
-        .fix_width(200.0)
-        .padding(10.0);
+            ui.horizontal(|ui| {
+                ui.label("Your name: ");
+                ui.text_edit_singleline(&mut self.name);
+            });
 
-    // Todo: Make it a lever
-    let client_checkbox = Checkbox::new("Is client")
-        .lens(AppState::client)
-        .padding(10.0);
+            ui.separator();
 
-    let output_dir = TextBox::new()
-        .with_placeholder("Enter a valid output path")
-        .lens(AppState::output)
-        .fix_width(200.0)
-        .padding(10.0);
+            ui.label(format!("Your name is {}.", &self.name));
 
-    let submit_button = Button::new("Download")
-        .on_click(|_ctx, data: &mut AppState, _env| {
-            println!("GUI received the values: \npack_id: {}\nrelease_id: {}\nclient?: {}\noutput_directory: {:?}", data.pack_id, data.release_id, data.client, PathBuf::from_str(data.output.as_str()).expect("No valid output path"));
-        })
-        .fix_width(100.0)
-        .padding(10.0);
-
-    Flex::column()
-        .with_child(
-            Flex::row()
-                .with_child(Label::new("Pack ID").padding(10.0))
-                .with_child(pack_id_input),
-        )
-        .with_child(
-            Flex::row()
-                .with_child(Label::new("Release ID").padding(10.0))
-                .with_child(release_id_input),
-        )
-        .with_child(client_checkbox)
-        .with_child(
-            Flex::row()
-                .with_child(Label::new("Output directory").padding(10.0))
-                .with_child(output_dir),
-        )
-        .with_child(submit_button)
-        .align_vertical(druid::UnitPoint::CENTER)
-        .align_horizontal(druid::UnitPoint::CENTER)
+        });
+    }
 }
 
-// Returns pack_id, release_id, client?, output_directory
-pub fn open_gui() -> (u32, u32, bool, PathBuf) {
-    let window = WindowDesc::new(build_ui())
-        .title("FTB Downloader")
-        .window_size((400.0, 300.0));
-
-    let initial_state = AppState {
-        pack_id: "".to_string(),
-        release_id: "".to_string(),
-        client: false,
-        output: ".".to_string(),
+pub fn open_test_gui() -> eframe::Result {
+    let native_options = eframe::NativeOptions {
+        viewport: ViewportBuilder::default()
+            .with_inner_size([400.0, 300.0])
+            .with_min_inner_size([300.0, 220.0]),
+        ..Default::default()
     };
 
-    AppLauncher::with_window(window)
-        .launch(initial_state)
-        .expect("Couldn't launch window");
+    eframe::run_native(
+        "Test application",
+        native_options,
+        Box::new(|_cc| Ok(Box::new(TestApp::default()))),
+    )
+}
 
+pub fn open_gui() -> (u32, u32, bool, PathBuf) {
     todo!()
 }

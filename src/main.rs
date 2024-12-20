@@ -2,7 +2,6 @@ mod gui;
 
 use clap::Parser;
 use core::panic;
-use gui::open_gui;
 use serde_json::Value;
 use std::{
     error::Error,
@@ -114,6 +113,11 @@ impl OnlineFile {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Open test UI
+    let result = gui::open_test_gui();
+
+    println!("{:?}", result);
+
     // Parse the arguments
     // or open the gui
     let args = Args::parse();
@@ -132,7 +136,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 Err(var) => panic!("Variable not found: {}", var),
             }
         }
-        false => open_gui(),
+        false => gui::open_gui(),
     };
 
     // Get the modpack index
