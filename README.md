@@ -1,5 +1,7 @@
-# Idea
-1. At https://apt.feed-the-beast.com/v1/modpacks/public/modpacks/{modpack-id}/{release-id} there is a json response containing
-links to every file needed to build the instance.
-2. Just download them and assemble them into a zip file or something else
-3. Import that into prism launcher
+# FTB Downloader
+
+# Todo
+ - Add a Nix Package with the required dependencies automatically set
+ - Output the required forge, minecraft and java versions
+ - Cool GUI enhancement to show to modpacks instead of typing its ID
+ - Maybe automatically add it to Prism Launcher
