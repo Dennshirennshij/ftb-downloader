@@ -89,7 +89,7 @@ impl eframe::App for InputApp {
                             || self.release_id.parse::<u32>().is_err())
                     {
                         let pack = self.pack_id.parse::<u32>().unwrap();
-                        let release = self.pack_id.parse::<u32>().unwrap();
+                        let release = self.release_id.parse::<u32>().unwrap();
 
                         let progress = Arc::new(Mutex::new(ProgressUpdate::default()));
                         self.updates = Some(progress.clone());
