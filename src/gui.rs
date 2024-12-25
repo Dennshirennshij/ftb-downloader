@@ -1,8 +1,8 @@
 use crate::downloader::{download, ProgressUpdate};
 use eframe::egui::{CentralPanel, ViewportBuilder};
 use egui::{Button, ProgressBar};
+use rfd::FileDialog;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio::runtime::Runtime;
@@ -10,7 +10,7 @@ use tokio::runtime::Runtime;
 struct InputApp {
     pack_id: String,
     release_id: String,
-    path: PathBuf,
+    path: Option<PathBuf>,
     updates: Option<Arc<Mutex<ProgressUpdate>>>,
 }
 impl Default for InputApp {
@@ -18,7 +18,7 @@ impl Default for InputApp {
         Self {
             pack_id: "0".to_string(),
             release_id: "0".to_string(),
-            path: PathBuf::from_str("./output").unwrap(),
+            path: None,
             updates: None,
         }
     }
@@ -37,6 +37,7 @@ impl eframe::App for InputApp {
             }
             drop(lock);
         }
+
         CentralPanel::default().show(ctx, |ui| {
             ui.heading("Download a FTB Modpack without the stupid app");
             ui.horizontal(|ui| {
@@ -63,18 +64,30 @@ impl eframe::App for InputApp {
                 ui.label("Release ID is not a number!!!");
             }
             ui.separator();
+
+            if let Some(path) = &self.path {
+                ui.label(path.to_str().unwrap());
+            }
+            if ui.button("Select Folder").clicked() {
+                if let Some(picked_path) = FileDialog::new().pick_folder() {
+                    self.path = Some(picked_path);
+                }
+            }
+
+            ui.separator();
             if let Some(update) = &self.updates {
                 let lock = update.lock().unwrap();
-                
+
                 let progress = lock.downloaded_files as f32 / lock.total_files as f32;
                 ui.add(ProgressBar::new(progress));
-                
+
                 drop(lock);
             } else {
                 ui.horizontal(|ui| {
                     if ui.add(download_server).clicked()
                         && !(self.pack_id.parse::<u32>().is_err()
-                            || self.release_id.parse::<u32>().is_err())
+                            || self.release_id.parse::<u32>().is_err()
+                            || self.path.is_none())
                     {
                         let pack = self.pack_id.parse::<u32>().unwrap();
                         let release = self.release_id.parse::<u32>().unwrap();
@@ -82,11 +95,12 @@ impl eframe::App for InputApp {
                         let progress = Arc::new(Mutex::new(ProgressUpdate::default()));
                         self.updates = Some(progress.clone());
 
-                        spawn_thread(pack, release, false, self.path.clone(), progress);
+                        spawn_thread(pack, release, false, self.path.clone().unwrap(), progress);
                     }
                     if ui.add(download_client).clicked()
                         && !(self.pack_id.parse::<u32>().is_err()
-                            || self.release_id.parse::<u32>().is_err())
+                            || self.release_id.parse::<u32>().is_err()
+                            || self.path.is_none())
                     {
                         let pack = self.pack_id.parse::<u32>().unwrap();
                         let release = self.release_id.parse::<u32>().unwrap();
@@ -94,7 +108,7 @@ impl eframe::App for InputApp {
                         let progress = Arc::new(Mutex::new(ProgressUpdate::default()));
                         self.updates = Some(progress.clone());
 
-                        spawn_thread(pack, release, true, self.path.clone(), progress);
+                        spawn_thread(pack, release, true, self.path.clone().unwrap(), progress);
                     }
                 });
             }
