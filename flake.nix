@@ -1,45 +1,63 @@
 {
-  description = "eframe devShell";
-
+  description = "Building my rust project";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    flake-utils.url = "github:numtide/flake-utils";
   };
+  outputs = { self, nixpkgs, rust-overlay, ... }:
+    let
 
-  outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+      project_name = "ftb-downloader";
+      version = "0.1.0";
+
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
         overlays = [ (import rust-overlay) ];
-        pkgs = import nixpkgs { inherit system overlays; };
-      in with pkgs; {
-        devShells.default = mkShell rec {
-          buildInputs = [
-            # Rust
-            rust-bin.stable.latest.default
-            trunk
+      };
+      nativeBuildInputs = with pkgs; [
+        pkg-config
+        gcc
+        rust-bin.stable.latest.default
+      ];
+      buildInputs = with pkgs; [
+        # misc
+        openssl
 
-            # misc. libraries
-            openssl
-            pkg-config
+        # x11 libs
+        xorg.libXcursor
+        xorg.libXrandr
+        xorg.libXi
+        xorg.libX11
 
-            # GUI libs
-            libxkbcommon
-            libGL
-            fontconfig
+        # wayland
+        wayland
 
-            # wayland libraries
-            wayland
-
-            # x11 libraries
-            xorg.libXcursor
-            xorg.libXrandr
-            xorg.libXi
-            xorg.libX11
-
-          ];
-
-          LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
-        };
-      });
+        # GUI libs
+        libxkbcommon
+        libGL
+        fontconfig
+      ];
+      libraryPath = pkgs.lib.makeLibraryPath buildInputs;
+    in
+    {
+      devShells.x86_64-linux.default = pkgs.mkShell {
+        LD_LIBRARY_PATH = "${libraryPath}:$LD_LIBRARY_PATH";
+        inherit buildInputs nativeBuildInputs;
+      };
+      packages.x86_64-linux.default = pkgs.rustPlatform.buildRustPackage {
+        pname = project_name;
+        inherit version;
+        cargoLock.lockFile = ./Cargo.lock;
+        src = ./.;
+        inherit buildInputs nativeBuildInputs;
+        
+        postFixup = ''
+          patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
+        '';
+      };
+      apps.x86_64-linux.default = {
+        type = "app";
+        program = "${self.packages.x86_64-linux.default}/bin/${project_name}";
+      };
+    };
 }
