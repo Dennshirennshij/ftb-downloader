@@ -6,9 +6,10 @@
   };
   outputs = { self, nixpkgs, rust-overlay, ... }:
     let
+      manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
 
-      project_name = "ftb-downloader";
-      version = "1.0.0";
+      project_name = manifest.name;
+      version = manifest.version;
 
       pkgs = import nixpkgs {
         system = "x86_64-linux";
@@ -53,6 +54,7 @@
         
         postFixup = ''
           patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
+          makeWrapper $out/bin/${project_name}
         '';
       };
       apps.x86_64-linux.default = {
