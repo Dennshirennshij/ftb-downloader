@@ -8,7 +8,7 @@
     let
 
       project_name = "ftb-downloader";
-      version = "0.1.0";
+      version = "1.0.0";
 
       pkgs = import nixpkgs {
         system = "x86_64-linux";
