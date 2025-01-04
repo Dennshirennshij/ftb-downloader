@@ -54,7 +54,6 @@
         
         postFixup = ''
           patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
-          makeWrapper $out/bin/${project_name}
         '';
       };
       apps.x86_64-linux.default = {
