@@ -18,7 +18,6 @@
         pkg-config
         gcc
         rust-bin.stable.latest.default
-        act
       ];
       buildInputs = with pkgs; [
         # misc
