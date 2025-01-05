@@ -1,0 +1,48 @@
+name: Build and Release with Nix
+
+# This workflow triggers when a new release is created through GitHub's interface
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Install Nix package manager
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          # Enable support for flakes if your project uses them
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      
+      # Build the project using Nix
+      - name: Build with Nix
+        run: |
+          nix build
+          # Create a directory for the artifacts
+          mkdir -p artifacts
+          # Copy the result to artifacts directory
+          cp -r result/* artifacts/
+      
+      # Upload build artifacts to the release
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      # Optional: Upload artifacts as workflow artifacts (useful for debugging)
+      #- name: Upload Build Artifacts
+        #uses: actions/upload-artifact@v3
+        #with:
+          #name: build-artifacts
+          #path: artifacts/
