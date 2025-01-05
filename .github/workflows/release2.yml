@@ -29,7 +29,7 @@ jobs:
         # Set the version in Cargo.toml to the version extracted from the PR title
         VERSION=${{ steps.set_version.outputs.version }}
         echo "Updating version in Cargo.toml to $VERSION"
-        sed -i 's/^version = .*/version = "'$VERSION'"/' Cargo.toml
+        sed -i 's/^version = .*/version = "'${VERSION:1}'"/' Cargo.toml
 
     - name: Commit version change
       run: |
