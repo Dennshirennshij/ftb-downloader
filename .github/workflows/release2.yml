@@ -1,0 +1,56 @@
+name: Version Release Workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - Cargo.toml
+
+jobs:
+  version-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set version from pull request title
+      id: set_version
+      run: |
+        # Extract version number from the PR title (v{x}.{y}.{z})
+        VERSION=$(echo "${{ github.event.pull_request.title }}" | grep -oP 'v\d+\.\d+\.\d+')
+        echo "Version extracted: $VERSION"
+        echo "::set-output name=version::$VERSION"
+
+    - name: Update Cargo.toml version
+      run: |
+        # Set the version in Cargo.toml to the version extracted from the PR title
+        VERSION=${{ steps.set_version.outputs.version }}
+        echo "Updating version in Cargo.toml to $VERSION"
+        sed -i 's/^version = .*/version = "'$VERSION'"/' Cargo.toml
+
+    - name: Commit version change
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add Cargo.toml
+        git commit -m "Update version to ${{ steps.set_version.outputs.version }} in Cargo.toml"
+        git push
+
+    - name: Tag commit with version
+      run: |
+        VERSION=${{ steps.set_version.outputs.version }}
+        git tag "v$VERSION"
+        git push origin "v$VERSION"
+
+    - name: Create draft release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.set_version.outputs.version }}
+        draft: true
