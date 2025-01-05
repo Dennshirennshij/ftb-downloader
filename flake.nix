@@ -46,6 +46,14 @@
         fontconfig
       ];
       libraryPath = pkgs.lib.makeLibraryPath buildInputs;
+      desktopEntry = pkgs.makeDesktopItem {
+        name = "${project_name}";
+        desktopName = desktop_name;
+        exec = "ftb-downloader";
+        icon = "";
+        comment = "";
+        categories = [];
+      };
     in
     {
       devShells.default = pkgs.mkShell {
@@ -62,36 +70,31 @@
         postFixup = ''
           patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
         '';
+        desktopItems = [ desktopEntry ];
       };
       packages.default = 
         let
-          binary = pkgs.fetchurl {
+          bin = pkgs.fetchurl {
             url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
             #url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v${version}/Hello-World-v${version}-${system}";
+            #url = "https://github.com/Dennshirennshij/ftb-downloader/releases/download/v1.0.0/ftb-downloader-v1.0.0-x86_64-linux";
             hash = "sha256-kpn2jO+VPL5pYY27oPDSGQndm7bpK7SGfQMDbsivM10=";
           };
         in 
           pkgs.stdenv.mkDerivation {
             pname = "${project_name}";
             version = "${version}";
-            src = binary;
+            src = bin;
             dontUnpack = true;
 
             nativeBuildInputs = [
               pkgs.copyDesktopItems
-            ] ++ nativeBuildInputs;
+            ];
 
-            buildInputs = buildInputs ++ nativeBuildInputs;
+            inherit buildInputs;
 
             desktopItems = [
-              (pkgs.makeDesktopItem {
-                name = "${project_name}";
-                desktopName = desktop_name;
-                exec = "ftb-downloader";
-                icon = "";
-                comment = "";
-                categories = [  ];
-              })
+              desktopEntry
             ];
 
             installPhase = ''
