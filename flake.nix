@@ -103,6 +103,10 @@
 
               runHook postInstall
             '';
+
+            postFixup = ''
+              patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
+            '';
           };
       
       apps.default = {
