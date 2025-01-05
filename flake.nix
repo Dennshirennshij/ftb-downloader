@@ -66,9 +66,9 @@
       packages.default = 
         let
           binary = pkgs.fetchurl {
-            #url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
-            url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v${version}/Hello-World-v${version}-${system}";
-            hash = "sha256-WU8PW3ngiJOUn/RlC+MkeqMrKubqq3256qM8suIRVsU=";
+            url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
+            #url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v${version}/Hello-World-v${version}-${system}";
+            hash = "";
           };
         in 
           pkgs.stdenv.mkDerivation {
@@ -81,11 +81,13 @@
               pkgs.copyDesktopItems
             ];
 
+            inherit buildInputs;
+
             desktopItems = [
               (pkgs.makeDesktopItem {
                 name = "${project_name}";
                 desktopName = desktop_name;
-                exec = "/home/ng/Development/ftb-downloader/target/debug/ftb-downloader";
+                exec = "ftb-downloader";
                 icon = "";
                 comment = "";
                 categories = [  ];
