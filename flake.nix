@@ -3,16 +3,23 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, nixpkgs, rust-overlay, ... }:
-    let
+  outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
+    flake-utils.lib.eachSystem [
+      # Supported systems
+      "x86_64-linux"
+    ] (system: let
+
+      desktop_name = "FTB Downloader";
+
       manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
 
       project_name = manifest.name;
       version = manifest.version;
 
       pkgs = import nixpkgs {
-        system = "x86_64-linux";
+        inherit system;
         overlays = [ (import rust-overlay) ];
       };
       nativeBuildInputs = with pkgs; [
@@ -41,11 +48,11 @@
       libraryPath = pkgs.lib.makeLibraryPath buildInputs;
     in
     {
-      devShells.x86_64-linux.default = pkgs.mkShell {
+      devShells.default = pkgs.mkShell {
         LD_LIBRARY_PATH = "${libraryPath}:$LD_LIBRARY_PATH";
         inherit buildInputs nativeBuildInputs;
       };
-      packages.x86_64-linux.default = pkgs.rustPlatform.buildRustPackage {
+      packages.from_source = pkgs.rustPlatform.buildRustPackage {
         pname = project_name;
         inherit version;
         cargoLock.lockFile = ./Cargo.lock;
@@ -56,9 +63,39 @@
           patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
         '';
       };
-      apps.x86_64-linux.default = {
+      packages.default = 
+        let
+          binary = pkgs.fetchurl {
+            #url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
+            url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v${version}/Hello-World-v${version}-${system}";
+            hash = "sha256-WU8PW3ngiJOUn/RlC+MkeqMrKubqq3256qM8suIRVsU=";
+          };
+        in 
+          pkgs.stdenv.mkDerivation {
+            pname = "${project_name}";
+            version = "${version}";
+            src = binary;
+            dontUnpack = true;
+
+            nativeBuildInputs = [
+              pkgs.copyDesktopItems
+            ];
+
+            desktopItems = [
+              (pkgs.makeDesktopItem {
+                name = "${project_name}";
+                desktopName = desktop_name;
+                exec = "/home/ng/Development/ftb-downloader/target/debug/ftb-downloader";
+                icon = "";
+                comment = "";
+                categories = [  ];
+              })
+            ];
+          };
+      
+      apps.default = {
         type = "app";
-        program = "${self.packages.x86_64-linux.default}/bin/${project_name}";
+        program = "${self.packages.${system}.default}/bin/${project_name}";
       };
-    };
+    });
 }
