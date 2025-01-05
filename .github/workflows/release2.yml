@@ -6,7 +6,7 @@ on:
       - main
       - master
     types:
-      - closed
+      - merged
 
 jobs:
   version-release:
