@@ -68,7 +68,7 @@
           binary = pkgs.fetchurl {
             url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
             #url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v${version}/Hello-World-v${version}-${system}";
-            hash = "";
+            hash = "sha256-kpn2jO+VPL5pYY27oPDSGQndm7bpK7SGfQMDbsivM10=";
           };
         in 
           pkgs.stdenv.mkDerivation {
@@ -93,6 +93,16 @@
                 categories = [  ];
               })
             ];
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out/bin
+              cp $src $out/bin/${project_name}
+              chmod +x $out/bin/${project_name}
+
+              runHook postInstall
+            '';
           };
       
       apps.default = {
