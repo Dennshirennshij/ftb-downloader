@@ -8,23 +8,14 @@ on:
     branches:
       - main
       - master
+    tags:
+      - "v*"
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
     
     steps:
-      # First, check if this push came from a merged pull request
-      # This ensures we only create releases for proper pull request merges
-      - name: Check if merge to main
-        id: check_merge
-        run: |
-          if [[ "${{ github.event.head_commit.message }}" == *"Merge pull request"* ]]; then
-            echo "is_merge=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_merge=false" >> $GITHUB_OUTPUT
-          fi
-
       # Get the code from your repository
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,7 +33,6 @@ jobs:
 
       # Create a new release on GitHub with a version based on the commit
       - name: Create Release
-        if: steps.check_merge.outputs.is_merge == 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,12 +42,11 @@ jobs:
           body: |
             Automated release from merged pull request
             Commit: ${{ github.event.head_commit.message }}
-          draft: true
+          draft: false
           prerelease: false
 
       # Upload the built files to the release
       - name: Upload Release Assets
-        if: steps.check_merge.outputs.is_merge == 'true'
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/*
