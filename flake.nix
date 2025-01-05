@@ -75,9 +75,9 @@
       packages.default = 
         let
           bin = pkgs.fetchurl {
-            url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
-            #url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v${version}/Hello-World-v${version}-${system}";
-            #url = "https://github.com/Dennshirennshij/ftb-downloader/releases/download/v1.0.0/ftb-downloader-v1.0.0-x86_64-linux";
+            #url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
+            #url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v1.0.0/Hello-World-v1.0.0-x86_64-linux";
+            url = "https://github.com/Dennshirennshij/ftb-downloader/releases/download/v1.0.0/ftb-downloader-v1.0.0-x86_64-linux";
             hash = "sha256-kpn2jO+VPL5pYY27oPDSGQndm7bpK7SGfQMDbsivM10=";
           };
         in 
@@ -89,7 +89,8 @@
 
             nativeBuildInputs = [
               pkgs.copyDesktopItems
-            ];
+              pkgs.autoPatchelfHook
+            ] ++ nativeBuildInputs;
 
             inherit buildInputs;
 
