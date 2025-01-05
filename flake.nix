@@ -79,9 +79,9 @@
 
             nativeBuildInputs = [
               pkgs.copyDesktopItems
-            ];
+            ] ++ nativeBuildInputs;
 
-            inherit buildInputs;
+            buildInputs = buildInputs ++ nativeBuildInputs;
 
             desktopItems = [
               (pkgs.makeDesktopItem {
