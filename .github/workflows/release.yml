@@ -1,48 +1,65 @@
+# This workflow automatically builds your project with Nix and creates a new release
+# whenever a pull request is merged into the main branch
 name: Build and Release with Nix
 
-# This workflow triggers when a new release is created through GitHub's interface
+# Define when this workflow should run
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
     
     steps:
-      # Check out the repository code
+      # First, check if this push came from a merged pull request
+      # This ensures we only create releases for proper pull request merges
+      - name: Check if merge to main
+        id: check_merge
+        run: |
+          if [[ "${{ github.event.head_commit.message }}" == *"Merge pull request"* ]]; then
+            echo "is_merge=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_merge=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Get the code from your repository
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      # Install Nix package manager
+
+      # Install the Nix package manager
       - name: Install Nix
         uses: cachix/install-nix-action@v24
-        with:
-          # Enable support for flakes if your project uses them
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-      
-      # Build the project using Nix
+
+      # Build your project using Nix and collect the results
       - name: Build with Nix
         run: |
           nix build
-          # Create a directory for the artifacts
           mkdir -p artifacts
-          # Copy the result to artifacts directory
           cp -r result/* artifacts/
-      
-      # Upload build artifacts to the release
-      - name: Upload Release Assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            artifacts/*
+
+      # Create a new release on GitHub with a version based on the commit
+      - name: Create Release
+        if: steps.check_merge.outputs.is_merge == 'true'
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      # Optional: Upload artifacts as workflow artifacts (useful for debugging)
-      #- name: Upload Build Artifacts
-        #uses: actions/upload-artifact@v3
-        #with:
-          #name: build-artifacts
-          #path: artifacts/
+        with:
+          tag_name: release-${{ github.sha }}
+          release_name: Release ${{ github.sha }}
+          body: |
+            Automated release from merged pull request
+            Commit: ${{ github.event.head_commit.message }}
+          draft: true
+          prerelease: false
+
+      # Upload the built files to the release
+      - name: Upload Release Assets
+        if: steps.check_merge.outputs.is_merge == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/*
+          tag_name: release-${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
