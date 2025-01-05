@@ -60,7 +60,7 @@
         LD_LIBRARY_PATH = "${libraryPath}:$LD_LIBRARY_PATH";
         inherit buildInputs nativeBuildInputs;
       };
-      packages.from_source = pkgs.rustPlatform.buildRustPackage {
+      packages.default = pkgs.rustPlatform.buildRustPackage {
         pname = project_name;
         inherit version;
         cargoLock.lockFile = ./Cargo.lock;
@@ -72,24 +72,27 @@
         '';
         desktopItems = [ desktopEntry ];
       };
-      packages.default = 
+      packages.do_not_use_under_any_circumstances_if_you_value_your_mental_health = 
         let
+          download_url = "https://github.com/Dennshirennshij/ftb-downloader/releases/download/v${version}/${project_name}-v${version}-${system}";
           bin = pkgs.fetchurl {
             #url = "https://github.com/Dennshirennshij/${project_name}/releases/download/v${version}/${project_name}-v${version}-${system}";
-            #url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v1.0.0/Hello-World-v1.0.0-x86_64-linux";
-            url = "https://github.com/Dennshirennshij/ftb-downloader/releases/download/v1.0.0/ftb-downloader-v1.0.0-x86_64-linux";
-            hash = "sha256-kpn2jO+VPL5pYY27oPDSGQndm7bpK7SGfQMDbsivM10=";
+            url = "https://github.com/Dennshirennshij/Hello-World/releases/download/v1.0.0/Hello-World-v1.0.0-x86_64-linux";
+            #url = "https://github.com/Dennshirennshij/ftb-downloader/releases/download/v1.0.0/ftb-downloader-v1.0.0-x86_64-linux";
+            hash = "sha256-WU8PW3ngiJOUn/RlC+MkeqMrKubqq3256qM8suIRVsU=";
           };
         in 
           pkgs.stdenv.mkDerivation {
             pname = "${project_name}";
             version = "${version}";
             src = bin;
+            #src = builtins.filterSource (path: type: false) ./.;
             dontUnpack = true;
 
             nativeBuildInputs = [
               pkgs.copyDesktopItems
               pkgs.autoPatchelfHook
+              pkgs.wget
             ] ++ nativeBuildInputs;
 
             inherit buildInputs;
@@ -103,13 +106,17 @@
 
               mkdir -p $out/bin
               cp $src $out/bin/${project_name}
+              #wget ${download_url} -o "$out/bin/${project_name}"
               chmod +x $out/bin/${project_name}
 
               runHook postInstall
             '';
 
             postFixup = ''
+              rm $out/bin/${project_name}
+              wget ${download_url} -o "$out/bin/${project_name}"
               patchelf --set-rpath "${libraryPath}" $out/bin/${project_name}
+              
             '';
           };
       
