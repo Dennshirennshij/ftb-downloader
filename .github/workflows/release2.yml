@@ -13,6 +13,11 @@ on:
       github.event.pull_request.title =~ '^v\d+\.\d+\.\d+$' &&
       github.event.pull_request.head.ref == 'dev'
 
+env: 
+  PROJECT_NAME: "ftb-downloader"
+  COMPILED_BINARY_OUTPUT_PATH: "result/bin/${{PROJECT_NAME}}"
+  
+
 jobs:
   version-release:
     runs-on: ubuntu-latest
@@ -57,13 +62,12 @@ jobs:
       run: |
         nix build
         mkdir -p artifacts
-        cp -r result/* artifacts/
-        mv artifacts/bin/ftb-downloader artifacts/bin/ftb-downloader-${VERSION}-x86_64-linux
+        cp ${COMPILED_BINARY_OUTPUT_PATH} artifacts/${PROJECT_NAME}-${ steps.set_version.outputs.version }-x86_64-linux
 
     - name: Create draft release with bin
       uses: softprops/action-gh-release@v1
       with:
         name: Release ${{ steps.set_version.outputs.version }}
         tag_name: ${{ steps.set_version.outputs.version }}
-        files: ./artifacts/bin/ftb-downloader-${VERSION}-x86_64-linux
+        files: ./artifacts/bin/ftb-downloader-${ steps.set_version.outputs.version }-x86_64-linux
         draft: true
