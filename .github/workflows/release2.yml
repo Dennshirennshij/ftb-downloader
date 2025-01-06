@@ -57,7 +57,7 @@ jobs:
         draft: true
         
     - name: Set up nix
-      uses: cachix/install-nix-action@v24
+      uses: cachix/install-nix-action@v30
 
     - name: Build the project
       run: |
