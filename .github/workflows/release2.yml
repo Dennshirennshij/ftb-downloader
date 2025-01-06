@@ -55,6 +55,7 @@ jobs:
       with:
         tag_name: ${{ steps.set_version.outputs.version }}
         draft: true
+        
     - name: Set up nix
       uses: cachix/install-nix-action@v24
 
