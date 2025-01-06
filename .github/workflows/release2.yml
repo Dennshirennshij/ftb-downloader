@@ -58,11 +58,12 @@ jobs:
         nix build
         mkdir -p artifacts
         cp -r result/* artifacts/
+        mv artifacts/bin/ftb-downloader artifacts/bin/ftb-downloader-${VERSION}-x86_64-linux
 
     - name: Create draft release with bin
       uses: softprops/action-gh-release@v1
       with:
         name: Release ${{ steps.set_version.outputs.version }}
         tag_name: ${{ steps.set_version.outputs.version }}
-        files: ./artifacts/bin/ftb-downloader
+        files: ./artifacts/bin/ftb-downloader-${VERSION}-x86_64-linux
         draft: true
