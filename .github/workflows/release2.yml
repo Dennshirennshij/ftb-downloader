@@ -56,15 +56,17 @@ jobs:
         tag_name: ${{ steps.set_version.outputs.version }}
         draft: true
     - name: Set up nix
-      uses: cachix/setup-nix@v1
+      uses: cachix/install-nix-action@v24
 
     - name: Build the project
       run: |
         nix-build
+        mkdir -p artifacts
+        cp -r result/* artifacts/
 
     - name: Upload asset to GitHub Release
       uses: softprops/action-gh-release@v1
       with: 
-        files: ./result/bin/ftb-downloader
+        files: ./artifacts/bin/ftb-downloader
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
