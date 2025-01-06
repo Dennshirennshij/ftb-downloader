@@ -76,5 +76,5 @@ jobs:
       with:
         name: Release ${{ steps.set_version.outputs.version }}
         tag_name: ${{ steps.set_version.outputs.version }}
-        files: ./artifacts/bin/${{ steps.config.outputs.project_name }}-${{ steps.set_version.outputs.version }}-x86_64-linux
+        files: ./artifacts/${{ steps.config.outputs.project_name }}-${{ steps.set_version.outputs.version }}-x86_64-linux
         draft: true
