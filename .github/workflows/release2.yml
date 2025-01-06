@@ -12,10 +12,6 @@ on:
       startsWith(github.event.pull_request.title, 'v') && 
       github.event.pull_request.title =~ '^v\d+\.\d+\.\d+$' &&
       github.event.pull_request.head.ref == 'dev'
-
-env: 
-  PROJECT_NAME: "ftb-downloader"
-  COMPILED_BINARY_OUTPUT_PATH: "result/bin/${{PROJECT_NAME}}"
   
 
 jobs:
@@ -23,6 +19,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Configuration
+      id: config
+      run: |
+        # Set the project name
+        PROJECT_NAME=ftb-downloader
+        OUTPUT_BINARY=result/bin/$PROJECT_NAME
+        
+        echo "::set-output name=project_name::$PROJECT_NAME"
+        echo "::set-output name=output_bin::$OUTPUT_BINARY"
+        
+    
     - name: Checkout code
       uses: actions/checkout@v2
 
@@ -62,12 +69,12 @@ jobs:
       run: |
         nix build
         mkdir -p artifacts
-        cp ${COMPILED_BINARY_OUTPUT_PATH} artifacts/${PROJECT_NAME}-${ steps.set_version.outputs.version }-x86_64-linux
+        cp ${{ steps.config.outputs.output_bin }} artifacts/${{ steps.config.outputs.project_name }}-${ steps.set_version.outputs.version }-x86_64-linux
 
     - name: Create draft release with bin
       uses: softprops/action-gh-release@v1
       with:
         name: Release ${{ steps.set_version.outputs.version }}
         tag_name: ${{ steps.set_version.outputs.version }}
-        files: ./artifacts/bin/ftb-downloader-${ steps.set_version.outputs.version }-x86_64-linux
+        files: ./artifacts/bin/${{ steps.config.outputs.project_name }}-${{ steps.set_version.outputs.version }}-x86_64-linux
         draft: true
