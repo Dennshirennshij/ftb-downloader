@@ -49,12 +49,6 @@ jobs:
         VERSION=${{ steps.set_version.outputs.version }}
         git tag "$VERSION"
         git push origin "$VERSION"
-
-    - name: Create draft release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ steps.set_version.outputs.version }}
-        draft: true
         
     - name: Set up nix
       uses: cachix/install-nix-action@v30
@@ -65,9 +59,10 @@ jobs:
         mkdir -p artifacts
         cp -r result/* artifacts/
 
-    - name: Upload asset to GitHub Release
+    - name: Create draft release with bin
       uses: softprops/action-gh-release@v1
-      with: 
+      with:
+        name: Release ${{ steps.set_version.outputs.version }}
+        tag_name: ${{ steps.set_version.outputs.version }}
         files: ./artifacts/bin/ftb-downloader
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
