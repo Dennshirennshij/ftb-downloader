@@ -69,7 +69,7 @@ jobs:
       run: |
         nix build
         mkdir -p artifacts
-        cp ${{ steps.config.outputs.output_bin }} artifacts/${{ steps.config.outputs.project_name }}-${ steps.set_version.outputs.version }-x86_64-linux
+        cp ${{ steps.config.outputs.output_bin }} artifacts/${{ steps.config.outputs.project_name }}-${{ steps.set_version.outputs.version }}-x86_64-linux
 
     - name: Create draft release with bin
       uses: softprops/action-gh-release@v1
