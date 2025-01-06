@@ -8,6 +8,7 @@
   outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
     flake-utils.lib.eachSystem [
       # Supported systems
+      # test
       "x86_64-linux"
     ] (system: let
 
