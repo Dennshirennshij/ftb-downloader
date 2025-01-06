@@ -61,7 +61,7 @@ jobs:
 
     - name: Build the project
       run: |
-        nix-build
+        nix build
         mkdir -p artifacts
         cp -r result/* artifacts/
 
