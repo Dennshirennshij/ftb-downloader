@@ -60,7 +60,7 @@
         LD_LIBRARY_PATH = "${libraryPath}:$LD_LIBRARY_PATH";
         inherit buildInputs nativeBuildInputs;
       };
-      # Thanks to rofdo for showing me this function
+      # Many thanks to rofdo for showing me this function
       packages.default = pkgs.rustPlatform.buildRustPackage {
         pname = project_name;
         inherit version;
