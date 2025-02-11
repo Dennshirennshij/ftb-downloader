@@ -23,7 +23,7 @@ jobs:
       id: config
       run: |
         # Set the project name
-        PROJECT_NAME=ftb-downloader
+        PROJECT_NAME=rust-template
         OUTPUT_BINARY=result/bin/$PROJECT_NAME
         
         echo "::set-output name=project_name::$PROJECT_NAME"
