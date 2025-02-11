@@ -39,7 +39,7 @@ impl eframe::App for InputApp {
         }
 
         CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Download a FTB Modpack here instead of the \"unique\" app");
+            ui.heading("Download a FTB Modpack here instead of the app");
             ui.horizontal(|ui| {
                 ui.label("Pack ID: ");
                 if self.updates.is_some() {
